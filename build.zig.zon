@@ -1,0 +1,8 @@
+.{
+    .name = "Yet Another Terminal Typing Test",
+    .version = "0.0.1",
+    .dependencies = .{},
+    .paths = .{
+        "",
+    },
+}
