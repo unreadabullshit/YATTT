@@ -5,11 +5,14 @@ const terminal = @import("terminal.zig");
 const utils = @import("utils.zig");
 const output = @import("output.zig");
 const input = @import("input.zig");
+const game = @import("game.zig");
 
 const STATE = enum { SETUP, REVIEW, TYPING, QUIT };
 
 pub var in: std.fs.File = undefined;
+
 var app_state: STATE = .SETUP;
+var g: *game.Game = undefined;
 
 pub fn main() !void {
     in = std.io.getStdIn();
@@ -23,6 +26,7 @@ pub fn main() !void {
     const allocator = arena.allocator();
 
     try terminal.init(allocator);
+    g = try game.newGame(allocator);
 
     while (app_state != .QUIT) {
         if (app_state == .SETUP) {
@@ -53,55 +57,54 @@ pub fn main() !void {
 
 // TODO: move these functions somewhere else
 fn drawWhileSetup(w: terminal.EasyBufferedWriter.Writer, ts: terminal.TerminalSize) void {
-    output.displayText(w, ts, "setup", "larem ipsum") catch {};
+    output.displayText(w, ts, "setup", "") catch {};
     output.displayFooter(w, ts) catch {};
 }
 
 fn drawWhileTyping(w: terminal.EasyBufferedWriter.Writer, ts: terminal.TerminalSize) void {
-    output.displayText(w, ts, "typing", "larem ipsum") catch {};
+    output.displayText(w, ts, g.phrase.items[0..], g.attempt.items[0..]) catch {};
     output.displayFooter(w, ts) catch {};
 }
 
-fn handlerWhileSetup(someInput: input.InputType) void {
-    switch (someInput) {
-        .NORMAL => |char| {
-            // TODO: add char to game attempt buffer
-            _ = char;
+fn handlerWhileSetup(someInput: ?input.InputType) void {
+    if (someInput) |_input| {
+        switch (_input) {
+            .LETTER => |char| {
+                g.typeChar(char) catch {};
 
-            app_state = .TYPING;
-        },
-        .SPECIAL => |str| {
-            if (str) |_str| {
-                if (std.mem.eql(u8, _str, "ESC")) {
+                app_state = .TYPING;
+            },
+            .SPECIAL => |key| {
+                if (key == .ESC) {
                     // "quit" app
                     app_state = .QUIT;
                 }
-            }
-        },
+            },
+            else => {},
+        }
     }
 }
 
-fn handlerWhileTyping(someInput: input.InputType) void {
-    switch (someInput) {
-        .NORMAL => |char| {
-            _ = char;
-            // TODO: add char to game attempt buffer
-        },
-        .SPECIAL => |str| {
-            if (str) |_str| {
-                if (std.mem.eql(u8, _str, "BACKSPACE") or std.mem.eql(u8, _str, "DELETE")) {
-                    // TODO: remove last char from game attempt buffer
+fn handlerWhileTyping(someInput: ?input.InputType) void {
+    if (someInput) |_input| {
+        switch (_input) {
+            .LETTER => |char| {
+                g.typeChar(char) catch {};
+            },
+            .SPECIAL => |key| {
+                if (key == .BACKSPACE or key == .DELETE) {
+                    g.deleteChar();
                 }
 
-                if (std.mem.eql(u8, _str, "ESC")) {
+                if (key == .ESC) {
                     app_state = .SETUP;
                 }
 
-                if (std.mem.eql(u8, _str, "SPACE")) {
-                    // TODO: add space char to game attempt buffer
-
+                if (key == .SPACE) {
+                    g.typeChar(' ') catch {};
                 }
-            }
-        },
+            },
+            else => {},
+        }
     }
 }

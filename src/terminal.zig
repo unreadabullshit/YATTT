@@ -15,7 +15,7 @@ const termios = os.termios;
 // types
 const Terminal = @This();
 const EasyWriter = io.Writer(fs.File, os.WriteError, fs.File.write);
-const TerminalLoopConfig = struct { output: *const fn (EasyBufferedWriter.Writer, TerminalSize) void, input: ?*const fn (input.InputType) void };
+const TerminalLoopConfig = struct { output: *const fn (EasyBufferedWriter.Writer, TerminalSize) void, input: ?*const fn (?input.InputType) void };
 
 // pub types
 pub const TerminalSize = struct { width: usize, height: usize };
@@ -58,14 +58,16 @@ pub fn init(someAllocator: mem.Allocator) !void {
 
     new_term.oflag.OPOST = false;
 
-    new_term.cc[@intFromEnum(os.system.V.MIN)] = 1; // Wait for at least one character
+    new_term.cflag.CSIZE = .CS8;
+
     new_term.cc[@intFromEnum(os.system.V.TIME)] = 0; // No timeout
+    new_term.cc[@intFromEnum(os.system.V.MIN)] = 1; // Wait for at least one character
 
     try os.tcsetattr(main.in.handle, .FLUSH, new_term);
 
-    // applying terminal magic spells
     const w = buffered_writer.writer();
 
+    // applying terminal magic spells
     try w.writeAll("\x1b[?25l"); // Hide cursor
     try w.writeAll("\x1b[s"); // Save cursor position
     try w.writeAll("\x1b[?47h"); // Switch to alternate screen buffer
@@ -157,12 +159,11 @@ pub fn withHandlers(loopConfig: TerminalLoopConfig) void {
     }
 }
 
-/// Run input and output handlers provided by withHandlers() with
+/// Run input and output handlers provided through withHandlers() with
 /// terminal context.
 ///
 /// If an input handler function is defined, this function will wait
-/// until user input to return, otherwise it'll only render using
-/// the output handler and return.
+/// until user input to return, otherwise it'll only run the output handler and return.
 pub fn step() void {
     const w = buffered_writer.writer();
 
@@ -172,8 +173,9 @@ pub fn step() void {
 
     if (loop_config.input) |input_fn| {
         // execute given input function
-        var read_c: input.InputType = undefined;
-        input.getKeyboardInput(&read_c, main.in);
+        var read_c: ?input.InputType = null;
+        input.getKeyboardInput(&read_c, main.in, &new_term) catch {};
+
         input_fn(read_c);
     }
 }
