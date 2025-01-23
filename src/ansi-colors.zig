@@ -1,6 +1,6 @@
 const terminal = @import("terminal.zig");
 
-const colors = enum { WHITE, GRAY, RED, BLUE };
+pub const colors = enum { WHITE, GRAY, RED, BLUE, GREEN };
 const styles = enum { UNDERLINE, NOUNDERLINE };
 
 /// using this struct to write escape sequencies to the
@@ -28,9 +28,10 @@ pub const ANSI = struct {
         }
     }
 
+    // FOREGROUNDS
     pub fn useBlueForeground(self: *Self, w: terminal.EasyBufferedWriter.Writer) !void {
         if (self.cForeground == null or self.cForeground.? != .BLUE) {
-            try w.writeAll("\x1b[38;5;31m");
+            try w.writeAll("\x1b[34m");
             self.cForeground = .BLUE;
             return;
         }
@@ -38,7 +39,7 @@ pub const ANSI = struct {
 
     pub fn useWhiteForeground(self: *Self, w: terminal.EasyBufferedWriter.Writer) !void {
         if (self.cForeground == null or self.cForeground.? != .WHITE) {
-            try w.writeAll("\x1b[38;5;255m");
+            try w.writeAll("\x1b[37m");
             self.cForeground = .WHITE;
             return;
         }
@@ -46,7 +47,7 @@ pub const ANSI = struct {
 
     pub fn useGrayForeground(self: *Self, w: terminal.EasyBufferedWriter.Writer) !void {
         if (self.cForeground == null or self.cForeground.? != .GRAY) {
-            try w.writeAll("\x1b[38;5;240m");
+            try w.writeAll("\x1b[90m");
             self.cForeground = .GRAY;
             return;
         }
@@ -54,8 +55,49 @@ pub const ANSI = struct {
 
     pub fn useRedForeground(self: *Self, w: terminal.EasyBufferedWriter.Writer) !void {
         if (self.cForeground == null or self.cForeground.? != .RED) {
-            try w.writeAll("\x1b[38;5;124m");
+            try w.writeAll("\x1b[31m");
             self.cForeground = .RED;
+            return;
+        }
+    }
+
+    // BACKGROUNDS
+    pub fn useRedBackground(self: *Self, w: terminal.EasyBufferedWriter.Writer) !void {
+        if (self.cBackground == null or self.cBackground.? != .RED) {
+            try w.writeAll("\x1b[41m");
+            self.cBackground = .RED;
+            return;
+        }
+    }
+
+    pub fn useBlueBackground(self: *Self, w: terminal.EasyBufferedWriter.Writer) !void {
+        if (self.cBackground == null or self.cBackground.? != .BLUE) {
+            try w.writeAll("\x1b[44m");
+            self.cBackground = .BLUE;
+            return;
+        }
+    }
+
+    pub fn useGreenBackground(self: *Self, w: terminal.EasyBufferedWriter.Writer) !void {
+        if (self.cBackground == null or self.cBackground.? != .GREEN) {
+            try w.writeAll("\x1b[42m");
+            self.cBackground = .GREEN;
+            return;
+        }
+    }
+
+    pub fn resetBackground(self: *Self, w: terminal.EasyBufferedWriter.Writer) !void {
+        if (self.cBackground != null) {
+            try w.writeAll("\x1b[49m");
+            self.cBackground = null;
+            return;
+        }
+    }
+
+    pub fn resetForeground(self: *Self, w: terminal.EasyBufferedWriter.Writer) !void {
+        if (self.cForeground != null) {
+            try w.writeAll("\x1b[39m");
+            self.cForeground = null;
             return;
         }
     }

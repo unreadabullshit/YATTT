@@ -6,6 +6,7 @@ const utils = @import("utils.zig");
 const output = @import("output.zig");
 const input = @import("input.zig");
 const game = @import("game.zig");
+const trm = @import("text-render-machine.zig");
 
 const STATE = enum { SETUP, REVIEW, TYPING, QUIT };
 
@@ -55,10 +56,22 @@ pub fn main() !void {
     }
 }
 
-// TODO: move these functions somewhere else
 fn drawWhileSetup(w: terminal.EasyBufferedWriter.Writer, ts: terminal.TerminalSize) void {
-    output.displayText(w, ts, "setup", "") catch {};
-    output.displayFooter(w, ts) catch {};
+    const children = &[_]trm.ContainerNode{
+        .{ .border = true, .children = null, .height = .auto, .width = .auto, .margin = 0, .padding = 0 },
+        .{ .border = true, .children = null, .height = .auto, .width = .auto, .margin = 1, .padding = 1 },
+        .{ .border = true, .children = null, .height = .auto, .width = .auto, .margin = 2, .padding = 2 },
+        .{ .border = true, .children = null, .height = .auto, .width = .auto, .margin = 3, .padding = 3 },
+    };
+
+    const initial_da = trm.DrawArea{ .height = ts.height, .width = ts.width, .col = 1, .row = 1 };
+
+    const node = trm.ContainerNode{ .border = true, .direction = .row, .children = @constCast(children), .margin = 0, .padding = 0, .height = .auto, .width = .auto };
+
+    node.render(
+        w,
+        initial_da,
+    ) catch {};
 }
 
 fn drawWhileTyping(w: terminal.EasyBufferedWriter.Writer, ts: terminal.TerminalSize) void {
@@ -92,11 +105,22 @@ fn handlerWhileTyping(someInput: ?input.InputType) void {
                 g.typeChar(char) catch {};
             },
             .SPECIAL => |key| {
-                if (key == .BACKSPACE or key == .DELETE) {
+                if (key == .DELETE) {
                     g.deleteChar();
                 }
 
+                if (key == .W_DELETE) {
+                    g.deleteWord();
+                }
+
                 if (key == .ESC) {
+                    g.attempt.deinit(g.allocator);
+                    g.phrase.deinit(g.allocator);
+
+                    g = game.newGame(g.allocator) catch {
+                        unreachable;
+                    };
+
                     app_state = .SETUP;
                 }
 

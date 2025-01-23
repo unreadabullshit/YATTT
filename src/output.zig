@@ -2,9 +2,10 @@ const std = @import("std");
 const terminal = @import("terminal.zig");
 const utils = @import("utils.zig");
 
-var ansi = @import("ansi-colors.zig").ANSI{};
+const with_ansi = @import("ansi-colors.zig");
+var ansi = with_ansi.ANSI{};
 
-// TODO: improve this fn logic
+// TODO: erase this shit once I got text-render-machine.zig working 100%
 pub fn displayText(w: terminal.EasyBufferedWriter.Writer, ts: terminal.TerminalSize, phrase: []const u8, attempt: []const u8) !void {
     var row: usize = 10;
     var col: usize = 20;
@@ -40,6 +41,7 @@ pub fn displayText(w: terminal.EasyBufferedWriter.Writer, ts: terminal.TerminalS
             try ansi.withUnderline(w);
             try ansi.useBlueForeground(w);
             try w.writeAll(&[1]u8{p});
+            try ansi.withoutUnderline(w);
 
             continue;
         }
@@ -55,7 +57,7 @@ pub fn displayText(w: terminal.EasyBufferedWriter.Writer, ts: terminal.TerminalS
         if (p != c) {
             try ansi.withoutUnderline(w);
             try ansi.useRedForeground(w);
-            try w.writeAll(&[1]u8{p});
+            try w.writeAll(&[1]u8{c.?});
 
             continue;
         }

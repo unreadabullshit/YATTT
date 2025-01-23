@@ -7,7 +7,7 @@ const fs = std.fs;
 
 const utils = @import("utils.zig");
 
-const SpecialKeys = enum { TAB, BACKSPACE, DELETE, ENTER, RETURN, SPACE, ESC, ARROW_UP, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT };
+const SpecialKeys = enum { TAB, DELETE, W_DELETE, ENTER, RETURN, SPACE, ESC, ARROW_UP, ARROW_DOWN, ARROW_LEFT, ARROW_RIGHT };
 const InputKind = enum { LETTER, SPECIAL, CTRL };
 pub const InputType = union(InputKind) { LETTER: u8, SPECIAL: SpecialKeys, CTRL: u8 };
 
@@ -41,6 +41,11 @@ pub fn getKeyboardInput(char: *?InputType, in: fs.File, raw: *os.termios) !void 
         if (esc_bytes == 0) {
             char.* = .{ .SPECIAL = .ESC };
             return;
+        }
+
+        // opt-del
+        if (esc_bytes == 1 and esc_buffer[0] == '\x7f') {
+            char.* = .{ .SPECIAL = .W_DELETE };
         }
 
         // Ctrl+i and "Ctrl+m" actually sends an escape sequence(on mac, not sure other platforms)
@@ -88,9 +93,6 @@ pub fn getKeyboardInput(char: *?InputType, in: fs.File, raw: *os.termios) !void 
         '\x09' => {
             char.* = .{ .SPECIAL = .TAB };
         },
-        '\x08' => {
-            char.* = .{ .SPECIAL = .BACKSPACE };
-        },
         '\x7f' => {
             char.* = .{ .SPECIAL = .DELETE };
         },
@@ -104,9 +106,7 @@ pub fn getKeyboardInput(char: *?InputType, in: fs.File, raw: *os.termios) !void 
             char.* = .{ .SPECIAL = .SPACE };
         },
         else => {
-            if (read_buffer[0] >= 'a' and read_buffer[0] <= 'z' or
-                read_buffer[0] >= 'A' and read_buffer[0] <= 'Z')
-            {
+            if (read_buffer[0] > 32 and read_buffer[0] < 127) {
                 char.* = .{ .LETTER = read_buffer[0] };
             }
         },

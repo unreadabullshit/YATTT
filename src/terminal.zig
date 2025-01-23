@@ -68,15 +68,11 @@ pub fn init(someAllocator: mem.Allocator) !void {
     const w = buffered_writer.writer();
 
     // applying terminal magic spells
+    // try w.writeAll("\x1b[?1000h\x1b[?1002h\x1b[?1003h\x1b[?1015h\x1b[?1006h"); // Mouse...
     try w.writeAll("\x1b[?25l"); // Hide cursor
     try w.writeAll("\x1b[s"); // Save cursor position
     try w.writeAll("\x1b[?47h"); // Switch to alternate screen buffer
-    try w.writeAll("\x1b[?1006l\x1b[?1015l\x1b[?1002l\x1b[?1000l"); // Disable various mouse protocols
     try w.writeAll("\x1b[?1049h"); // Enable alternate screen buffer
-    try w.writeAll("\x1b[?1000h"); // Enable mouse click tracking
-    try w.writeAll("\x1b[?1036h"); // Enable meta key sends escape
-    try w.writeAll("\x1b[?1037h"); // Enable DEL sends escape sequence
-    try w.writeAll("\x1b[?1006h"); // Enable SGR mouse mode
     try w.writeAll("\x1b[2J"); // Clear entire screen
 
     try buffered_writer.flush();
@@ -88,11 +84,7 @@ pub fn deinit() !void {
     const w = buffered_writer.writer();
 
     // reverting terminal magic spells
-    try w.writeAll("\x1b[?1000h\x1b[?1002h\x1b[?1015h\x1b[?1006h"); // Enable various mouse protocols
-    try w.writeAll("\x1b[?1006l"); // Disable SGR mouse mode
-    try w.writeAll("\x1b[?1037l"); // Disable DEL sends escape sequence
-    try w.writeAll("\x1b[?1036l"); // Disable meta key sends escape
-    try w.writeAll("\x1b[?1000l"); // Disable mouse click tracking
+    // try w.writeAll("\x1b[?1006l\x1b[?1015l\x1b[?1003l\x1b[?1002l\x1b[?1000l"); // Mouse...
     try w.writeAll("\x1b[?25h"); // Show cursor
     try w.writeAll("\x1b[?1049l"); // Disable alternate screen buffer
     try w.writeAll("\x1b[?47l"); // Switch back to main screen buffer

@@ -25,6 +25,18 @@ pub const Game = struct {
     pub fn deleteChar(self: *Self) void {
         _ = self.attempt.popOrNull();
     }
+
+    pub fn deleteWord(self: *Self) void {
+        while (true) {
+            const rmv = self.attempt.popOrNull();
+
+            if (rmv == null) break;
+
+            if (self.attempt.items.len == 0) break;
+
+            if (self.attempt.items[self.attempt.items.len - 1] == ' ') break;
+        }
+    }
 };
 
 pub fn newGame(someAllocator: std.mem.Allocator) !*Game {
