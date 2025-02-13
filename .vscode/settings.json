@@ -1,0 +1,29 @@
+{
+  "cSpell.words": [
+    "BRKINT",
+    "callconv",
+    "cflag",
+    "CSIZE",
+    "deinit",
+    "errno",
+    "ICANON",
+    "ICRNL",
+    "IEXTEN",
+    "iflag",
+    "INPCK",
+    "IOCGWINSZ",
+    "ISIG",
+    "ISTRIP",
+    "IXON",
+    "lflag",
+    "oflag",
+    "OPOST",
+    "sigaction",
+    "sigset",
+    "tcgetattr",
+    "tcsetattr",
+    "termios",
+    "usize",
+    "winsize"
+  ]
+}
