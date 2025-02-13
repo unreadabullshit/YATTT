@@ -58,15 +58,13 @@ pub fn main() !void {
 
 fn drawWhileSetup(w: terminal.EasyBufferedWriter.Writer, ts: terminal.TerminalSize) void {
     const children = &[_]trm.ContainerNode{
-        .{ .border = true, .children = null, .height = .auto, .width = .auto, .margin = 0, .padding = 0 },
-        .{ .border = true, .children = null, .height = .auto, .width = .auto, .margin = 1, .padding = 1 },
-        .{ .border = true, .children = null, .height = .auto, .width = .auto, .margin = 2, .padding = 2 },
-        .{ .border = true, .children = null, .height = .auto, .width = .auto, .margin = 3, .padding = 3 },
+        .{ .border = false, .children = null, .height = .auto, .width = .auto, .margin = 0, .padding = 0 },
+        .{ .border = true, .children = null, .height = .fit, .width = .auto, .margin = 0, .padding = 0 },
     };
 
     const initial_da = trm.DrawArea{ .height = ts.height, .width = ts.width, .col = 1, .row = 1 };
 
-    const node = trm.ContainerNode{ .border = true, .direction = .row, .children = @constCast(children), .margin = 0, .padding = 0, .height = .auto, .width = .auto };
+    const node = trm.ContainerNode{ .border = false, .direction = .column, .children = @constCast(children), .margin = 0, .padding = 0, .height = .auto, .width = .auto };
 
     node.render(
         w,
@@ -75,8 +73,19 @@ fn drawWhileSetup(w: terminal.EasyBufferedWriter.Writer, ts: terminal.TerminalSi
 }
 
 fn drawWhileTyping(w: terminal.EasyBufferedWriter.Writer, ts: terminal.TerminalSize) void {
-    output.displayText(w, ts, g.phrase.items[0..], g.attempt.items[0..]) catch {};
-    output.displayFooter(w, ts) catch {};
+    const children = &[_]trm.ContainerNode{
+        .{ .border = true, .children = null, .height = .auto, .width = .auto, .margin = 0, .padding = 0 },
+        .{ .border = false, .children = null, .height = .fit, .width = .auto, .margin = 0, .padding = 0 },
+    };
+
+    const initial_da = trm.DrawArea{ .height = ts.height, .width = ts.width, .col = 1, .row = 1 };
+
+    const node = trm.ContainerNode{ .border = false, .direction = .column, .children = @constCast(children), .margin = 0, .padding = 0, .height = .auto, .width = .auto };
+
+    node.render(
+        w,
+        initial_da,
+    ) catch {};
 }
 
 fn handlerWhileSetup(someInput: ?input.InputType) void {
