@@ -1,6 +1,6 @@
 const terminal = @import("terminal.zig");
 
-pub const colors = enum { WHITE, GRAY, RED, BLUE, GREEN };
+pub const colors = enum { WHITE, GRAY, RED, BLUE, GREEN, YELLOW };
 const styles = enum { UNDERLINE, NOUNDERLINE };
 
 /// using this struct to write escape sequencies to the
@@ -82,6 +82,13 @@ pub const ANSI = struct {
         if (self.cBackground == null or self.cBackground.? != .GREEN) {
             try w.writeAll("\x1b[42m");
             self.cBackground = .GREEN;
+            return;
+        }
+    }
+    pub fn useYellowBackground(self: *Self, w: terminal.EasyBufferedWriter.Writer) !void {
+        if (self.cBackground == null or self.cBackground.? != .YELLOW) {
+            try w.writeAll("\x1b[43m");
+            self.cBackground = .YELLOW;
             return;
         }
     }
