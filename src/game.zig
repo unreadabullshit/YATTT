@@ -7,15 +7,15 @@ pub const Game = struct {
     allocator: std.mem.Allocator,
     phrase: std.ArrayListUnmanaged(u8) = undefined,
     attempt: std.ArrayListUnmanaged(u8) = undefined,
-    total_errors_commited_count: u32 = 0,
-    final_errors_commited_count: u32 = 0,
+    total_errors_committed_count: u32 = 0,
+    final_errors_committed_count: u32 = 0,
 
     pub fn typeChar(self: *Self, char: u8) !void {
         if (self.attempt.items.len < self.phrase.items.len) {
             try self.attempt.append(self.allocator, char);
 
             if (char != self.phrase.items[self.attempt.items.len - 1]) {
-                self.total_errors_commited_count += 1;
+                self.total_errors_committed_count += 1;
             }
 
             if (self.attempt.items.len == self.phrase.items.len) {}
