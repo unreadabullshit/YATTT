@@ -68,7 +68,7 @@ pub fn init(someAllocator: mem.Allocator) !void {
     const w = buffered_writer.writer();
 
     // applying terminal magic spells
-    // try w.writeAll("\x1b[?1000h\x1b[?1002h\x1b[?1003h\x1b[?1015h\x1b[?1006h"); // Mouse...
+    try w.writeAll("\x1b[?1000h\x1b[?1002h\x1b[?1003h\x1b[?1015h\x1b[?1006h"); // Mouse...
     try w.writeAll("\x1b[?25l"); // Hide cursor
     try w.writeAll("\x1b[s"); // Save cursor position
     try w.writeAll("\x1b[?47h"); // Switch to alternate screen buffer
@@ -84,7 +84,7 @@ pub fn deinit() !void {
     const w = buffered_writer.writer();
 
     // reverting terminal magic spells
-    // try w.writeAll("\x1b[?1006l\x1b[?1015l\x1b[?1003l\x1b[?1002l\x1b[?1000l"); // Mouse...
+    try w.writeAll("\x1b[?1006l\x1b[?1015l\x1b[?1003l\x1b[?1002l\x1b[?1000l"); // Mouse...
     try w.writeAll("\x1b[?25h"); // Show cursor
     try w.writeAll("\x1b[?1049l"); // Disable alternate screen buffer
     try w.writeAll("\x1b[?47l"); // Switch back to main screen buffer
@@ -127,7 +127,7 @@ fn getTerminalSize() TerminalSize {
 /// Use this function to provide to the terminal struct functions
 /// that should run when the step() function is called.
 ///
-/// (these handlers have to be received by this function and stored on the terminal struct instead of directly given to the step() because otherwise the handleSigWinch() wouldn't knew which draw function to run after the user reajusts the terminal windows size.)
+/// (these handlers have to be received by this function and stored on the terminal struct instead of directly given to the step() because otherwise the handleSigWinch() wouldn't knew which draw function to run after the user readjust the terminal windows size.)
 pub fn withHandlers(loopConfig: TerminalLoopConfig) void {
     // instead of directly assigning loop_config = loopConfig
     // we check if the functions changed since the user(me) can
